@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Prepositions Lesson</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals with Academic Blue -->
+    <!-- Application Structure Plan: The SPA is structured into three main, tab-navigated sections: "Learn the Rules," "Practice Exercises," and "Learning Tips." This structure separates the primary user goals (learning vs. testing) for a clearer experience than the linear PDF. The "Learn" section uses a dynamic filter-and-card system, which is superior to the PDF's static tables. It allows users to focus on one category (e.g., "Time") or see all rules at once, making the content highly explorable and less overwhelming. The "Practice" section converts static exercises into interactive, self-correcting quizzes, providing immediate feedback which is crucial for learning. The "Tips" section uses an accordion to save space. This architecture prioritizes user-controlled exploration and interactive feedback. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: All Rule Tables (Time, Place, Connections, Academic). Goal: Organize, Inform. Viz/Method: A responsive grid of "Rule Cards" (HTML/Tailwind), each with a `data-category` attribute. Interaction: JS-powered filter buttons ("All", "Time", "Place", etc.) toggle the visibility of cards based on their category. Justification: This card-based, filterable grid is more flexible and digestible than the PDF's long, separate tables, allowing user-controlled information density.
+        - Report Info: Practice Exercises (1, 2, 3). Goal: Engage, Test Knowledge. Viz/Method: Interactive forms (HTML `<input>`). Ex 1 & 2 use blank inputs. Ex 3 uses inputs pre-filled with the *incorrect* preposition. Interaction: "Check Answers" buttons use JS to validate input values against a stored answer key, applying `.correct` or `.incorrect` classes for immediate visual feedback. "Show Answers" buttons populate inputs with correct answers. Justification: This transforms passive exercises into active, self-grading quizzes, which is far more effective for learning.
+        - Report Info: "Learning Tips". Goal: Inform, Organize. Viz/Method: An Accordion (HTML/Tailwind/JS). Interaction: Clicking a tip's header toggles the visibility of its content panel and an icon. Justification: An accordion is more compact and interactive than a static list, fitting neatly into the tabbed structure.
+        - Report Info: "The Basics" (Definition). Goal: Inform. Viz/Method: Static text block (HTML `p`) in the header/intro. Justification: Provides immediate context.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .tab-active {
+            border-bottom-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .filter-active {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+        .rule-card-time { border-left-color: #3b82f6; }
+        .rule-card-place { border-left-color: #22c55e; }
+        .rule-card-connection { border-left-color: #a855f7; }
+        .rule-card-academic { border-left-color: #f97316; }
+
+        .quiz-input {
+            transition: all 0.2s ease-in-out;
+            min-width: 80px;
+        }
+        .quiz-input.correct {
+            border-color: #22c55e;
+            background-color: #f0fdf4;
+            color: #166534;
+            box-shadow: 0 0 0 2px #bbf7d0;
+        }
+        .quiz-input.incorrect {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+            color: #991b1b;
+            box-shadow: 0 0 0 2px #fecaca;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-3">Grammar: Using Prepositions</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">An interactive guide to learning the rules of prepositions for time, place, connections, and academic writing. Explore the rules and test your knowledge.</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-gray-300 mb-8">
+            <button data-tab="learn" class="tab-button tab-active text-lg px-6 py-3 border-b-2 border-transparent hover:text-indigo-600 transition">Learn the Rules</button>
+            <button data-tab="practice" class="tab-button text-lg px-6 py-3 border-b-2 border-transparent hover:text-indigo-600 transition">Practice Exercises</button>
+            <button data-tab="tips" class="tab-button text-lg px-6 py-3 border-b-2 border-transparent hover:text-indigo-600 transition">Learning Tips</button>
+        </nav>
+
+        <main>
+            <section id="learn-content" class="tab-content">
+                <p class="text-gray-600 text-center mb-6 max-w-2xl mx-auto">Prepositions link nouns, pronouns, and phrases to other words. While many are fixed expressions, the rules below help define relationships in time and space. Use the filters to focus on a specific category.</p>
+
+                <div class="flex justify-center flex-wrap gap-2 mb-8">
+                    <button data-filter="all" class="filter-button filter-active px-4 py-2 text-sm font-medium rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition">All Rules</button>
+                    <button data-filter="time" class="filter-button px-4 py-2 text-sm font-medium rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition">Time</button>
+                    <button data-filter="place" class="filter-button px-4 py-2 text-sm font-medium rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition">Place & Direction</button>
+                    <button data-filter="connection" class="filter-button px-4 py-2 text-sm font-medium rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition">Connections</button>
+                    <button data-filter="academic" class="filter-button px-4 py-2 text-sm font-medium rounded-full bg-gray-200 hover:bg-indigo-500 hover:text-white transition">Academic Writing</button>
+                </div>
+
+                <div id="rules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">in <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Months, seasons, years, centuries, historical periods, time of day.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>in August / in the summer</li>
+                            <li>in 1985</li>
+                            <li>in the evening</li>
+                            <li>in the 19th century</li>
+                            <li>in two hours (after a period of time)</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">at <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Specific time of day, noon, night, midnight, mealtimes, age.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>at 2:30</li>
+                            <li>at night / at noon</li>
+                            <li>at breakfast</li>
+                            <li>I learned to use a computer at 12.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">on <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Days of the week, specific dates.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>on Friday</li>
+                            <li>on April 21st</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">since <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">From a period of time up to the present (when it started).</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I have been a student since 2004.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">for <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">How long a period of time has been.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I have been a student here for 2 years.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">from...to... <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">The beginning and end of a period of time.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>My appointment is from 13:30 to 14:00.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">until <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">A period of time up to a specific point in time.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I cannot go dancing until I finish this chapter.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-time" data-category="time">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">by <span class="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Time</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">In the sense of "at the latest"; due date.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>You must return your book by April 21st.</li>
+                            <li>My essay is due by the end of the week.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">in <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">When something is inside a place (enclosed within limits).</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>in class / in Victoria</li>
+                            <li>in the book</li>
+                            <li>in the car / in a taxi</li>
+                            <li>You look serious in this photo.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">at <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Located at a specific place (a point); for events; place for typical activity.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>at the library</li>
+                            <li>at a concert / at a party</li>
+                            <li>at the cinema / at school / at work</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">on <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Being on a surface; for a certain side; for a floor; for public transport; for TV/radio.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I left the keys on the table.</li>
+                            <li>...the third door on your left.</li>
+                            <li>My apartment is on the fourth floor.</li>
+                            <li>I forgot my phone on the bus.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">to / from <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Moving toward a specific place (goal) / For the origin or starting point.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>Every morning, I take the bus to campus.</li>
+                            <li>I used carrots from my garden.</li>
+                            <li>I received a suspicious email from my bank.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">towards <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Movement in direction of something.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I suddenly saw a dog running towards me.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">across <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Movement from one side to another.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>There is a coffee shop across the street.</li>
+                            <li>I swam across the lake.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">through <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Movement from one side to another but "in something".</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I entered the room through an open window.</li>
+                            <li>You have to go through the kitchen.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">between <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">A place "in the middle" of two or more separate people or things.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>I was standing between my friend and his parents.</li>
+                        </ul>
+                    </div>
+
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-place" data-category="place">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">among <span class="text-sm font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">Place</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">A place "surrounded" by more than two people or things as a group.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>France is among the countries of Western Europe.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-connection" data-category="connection">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">of <span class="text-sm font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Connection</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Shows the first belongs to or is part of the second; relation.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>The keyboard of my computer is pink.</li>
+                            <li>Richard is the son of Audrey.</li>
+                            <li>He is a good friend of mine.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-connection" data-category="connection">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">with <span class="text-sm font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Connection</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Second is a feature of the first; people/things are together; specific thing used.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...the computer with a pink keyboard.</li>
+                            <li>I am studying with Tara.</li>
+                            <li>My roommate killed a spider with a book.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-connection" data-category="connection">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">by <span class="text-sm font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded">Connection</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Describe an action in a more general way.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>My roommate saved my life by killing the spider.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">about <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">For topics (in the sense of "with regard to/concerned with").</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...books about the history of ancient Egypt.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">for <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">With a purpose/giving a reason (shortened "for the purpose of").</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...important for understanding how society works.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">from <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">The origin, cause, or agent of something.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...hard to guess from the individual words.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">in <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Inclusion, location, or position within a time period or limits.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>You can see this in works by contemporary authors.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">on <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">The basis for something.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...proceed on the assumption that...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">of <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Belonging to, relating to, or connected with; causation; origin.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>The results of the investigation...</li>
+                            <li>The root of the problem...</li>
+                            <li>...died of poisoning...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">by <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Describe a direct cause or agent.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...he was killed by strangulation by the Mad King...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">with <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Connected to something and near something; using something.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...agreement with statements regarding...</li>
+                            <li>...conclude with the available data.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rule-card bg-white p-5 rounded-lg shadow-lg border-l-4 rule-card-academic" data-category="academic">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">between <span class="text-sm font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Academic</span></h3>
+                        <p class="font-medium text-gray-700 mb-2">Marking a connection.</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm space-y-1">
+                            <li>...the relationship between education, diet and health.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="practice-content" class="tab-content hidden">
+                <p class="text-gray-600 text-center mb-6 max-w-2xl mx-auto">Test your knowledge! These exercises are adapted from the original document. Fill in the blanks or correct the mistakes, then click "Check Answers" for immediate feedback.</p>
+
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Exercise 1: Complete the text</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6 space-y-4" id="ex1-form">
+                        <strong>Student:</strong> Excuse me, when are your office hours? <br>
+                        <strong>Instructor:</strong> I am available to meet
+                        <input type="text" id="ex1-q1" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        Thursday
+                        <input type="text" id="ex1-q2" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        13:30 and 15:30.
+                        <br>
+                        <strong>Student:</strong> I have class
+                        <input type="text" id="ex1-q3" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        that time. Can we meet
+                        <input type="text" id="ex1-q4" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        lunch?
+                        <br>
+                        <strong>Instructor:</strong> Is it urgent?
+                        <br>
+                        <strong>Student:</strong> Yes, I have some questions to ask you
+                        <input type="text" id="ex1-q5" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the mid-term exam.
+                        <br>
+                        <strong>Instructor:</strong> You can come
+                        <input type="text" id="ex1-q6" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        11:00. Does that work
+                        <input type="text" id="ex1-q7" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        you?
+                        <br>
+                        <strong>Student:</strong> Yes, thank you. Can you remind me where is your office?
+                        <br>
+                        <strong>Instructor:</strong> My office is
+                        <input type="text" id="ex1-q8" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        room A321
+                        <input type="text" id="ex1-q9" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the third floor
+                        <input type="text" id="ex1-q10" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the David Turpin Building.
+                    </p>
+                    <div class="flex gap-4">
+                        <button id="ex1-check" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition">Check Answers</button>
+                        <button id="ex1-show" class="px-5 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition">Show Answers</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Exercise 2: Add the appropriate prepositions</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6 space-y-4" id="ex2-form">
+                        <strong>Student:</strong> Hi Pr. Smith. I am Amanda Liu
+                        <input type="text" id="ex2-q1" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        your Introduction to Postmodernist Literature Class 204. I missed class the past two weeks. I had a family emergency that I needed to attend
+                        <input type="text" id="ex2-q2" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">(to)
+                        . I wonder if you might be able to give me notes
+                        <input type="text" id="ex2-q3" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the lectures that I missed.
+                        <br>
+                        <strong>Instructor:</strong> I am sorry to hear that you had a family emergency to deal
+                        <input type="text" id="ex2-q4" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">(with)
+                        . Unfortunately, I cannot give you my notes
+                        <input type="text" id="ex2-q5" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        fairness
+                        <input type="text" id="ex2-q6" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        other students. Do you have any friends who could share their notes
+                        <input type="text" id="ex2-q7" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        you?
+                        <br>
+                        <strong>Student:</strong> Yes, but they are a total mess. What did you discuss
+                        <input type="text" id="ex2-q8" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        class
+                        <input type="text" id="ex2-q9" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        my absence?
+                        <br>
+                        <strong>Instructor:</strong>
+                        <input type="text" id="ex2-q10" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the last two weeks, we looked
+                        <input type="text" id="ex2-q11" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        narrative techniques such as fragmentation and temporal distortion,
+                        <input type="text" id="ex2-q12" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        a specific emphasis
+                        <input type="text" id="ex2-q13" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the work
+                        <input type="text" id="ex2-q14" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        David Foster Wallace. You will find information
+                        <input type="text" id="ex2-q15" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        these techniques
+                        <input type="text" id="ex2-q16" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        the textbook
+                        <input type="text" id="ex2-q17" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        page 208
+                        <input type="text" id="ex2-q18" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" placeholder="...">
+                        page 252.
+                    </p>
+                    <div class="flex gap-4">
+                        <button id="ex2-check" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition">Check Answers</button>
+                        <button id="ex2-show" class="px-5 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition">Show Answers</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-xl mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Exercise 3: Correct the mistakes</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6 space-y-4" id="ex3-form">
+                        Dear Dr. Smith,
+                        <br>
+                        This is Amanda Liu from your Introduction to Postmodernist Literature Class. After reading excerpts of Wallace's Infinite Jest, there was something that seemed odd
+                        <input type="text" id="ex3-q1" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" value="for">
+                        me. In my notes, I wrote that the heavy use of endnotes is meant to disrupt the linear narrative. Given Wallace's perception
+                        <input type="text" id="ex3-q2" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" value="on">
+                        reality as contingent, I can understand the latter interpretation. I'm having difficulty understanding how the conclusion can be said to be open-ended, though. I understand that it has something to do
+                        <input type="text" id="ex3-q3" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" value="from">
+                        the story eschewing chronological plot development and straightforward resolution, which support a wide range of readings, but the reliance
+                        <input type="text" id="ex3-q4" class="quiz-input border border-gCray-300 rounded px-2 py-1 mx-1" value="of">
+                        endnotes does seem to maintain some sense of narrative cohesion. I've talked to a few others in class, and none of them have been able to provide me much insight. Would you be able to explain this to me? If you do not have time to do so via email, would you be willing to discuss it
+                        <input type="text" id="ex3-q5" class="quiz-input border border-gray-300 rounded px-2 py-1 mx-1" value="on">
+                        the beginning of next class?
+                        <br>
+                        Sincerely,
+                        <br>
+                        Amanda Liu
+                    </p>
+                    <div class="flex gap-4">
+                        <button id="ex3-check" class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition">Check Answers</button>
+                        <button id="ex3-show" class="px-5 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition">Show Answers</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="tips-content" class="tab-content hidden">
+                <p class="text-gray-600 text-center mb-6 max-w-2xl mx-auto">Learning prepositions just takes time and practice. Much of their use is idiomatic, so memorizing fixed phrases is key. Here are some tips to help you master them.</p>
+
+                <div class="max-w-2xl mx-auto space-y-4" id="accordion-container">
+                    <div class="accordion-item border border-gray-200 rounded-lg bg-white shadow-sm">
+                        <button class="accordion-header flex justify-between items-center w-full p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 transition">
+                            <span>1. Avoid Direct Translation</span>
+                            <span class="accordion-icon text-xl text-indigo-500 font-bold">+</span>
+                        </button>
+                        <div class="accordion-content hidden p-5 pt-0 text-gray-600">
+                            <p>Do not directly translate prepositions from your first language, as one preposition may correspond to several different prepositions in English. A good way to learn which preposition to use is to consult an English learner's dictionary. You can also use Google Books Ngram Viewer to see the frequency of phrases in standard English.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border border-gray-200 rounded-lg bg-white shadow-sm">
+                        <button class="accordion-header flex justify-between items-center w-full p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 transition">
+                            <span>2. Read and Contextualize (Flashcards)</span>
+                            <span class="accordion-icon text-xl text-indigo-500 font-bold">+</span>
+                        </button>
+                        <div class="accordion-content hidden p-5 pt-0 text-gray-600">
+                            <p>Reading texts in English is helpful to learn prepositional phrases in context. Choose any text that interests you and identify all prepositions, with a specific emphasis on the noun or verb that goes with it. To memorize them, create your own "flashcard" with the prepositional phrase and a drawing that depicts its usage and/or meaning.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border border-gray-200 rounded-lg bg-white shadow-sm">
+                        <button class="accordion-header flex justify-between items-center w-full p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 transition">
+                            <span>3. Listen and Practice Speaking</span>
+                            <span class="accordion-icon text-xl text-indigo-500 font-bold">+</span>
+                        </button>
+                        <div class="accordion-content hidden p-5 pt-0 text-gray-600">
+                            <p>Listening attentively to speakers' use of prepositions in conversations, movies, songs, and presentations will help you extend your vocabulary. In turn, practice using prepositions in everyday conversations with classmates and friends. Start by focusing on five prepositional phrases and then progressively integrate new ones. Practice makes better!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center text-xs text-gray-400 mt-12 pt-8 border-t border-gray-200">
+            Created by Daby
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('tab-active'));
+                    tab.classList.add('tab-active');
+
+                    contents.forEach(content => {
+                        if (content.id === `${target}-content`) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const filters = document.querySelectorAll('.filter-button');
+            const rules = document.querySelectorAll('.rule-card');
+
+            filters.forEach(filter => {
+                filter.addEventListener('click', () => {
+                    const target = filter.getAttribute('data-filter');
+
+                    filters.forEach(f => f.classList.remove('filter-active'));
+                    filter.classList.add('filter-active');
+
+                    rules.forEach(rule => {
+                        if (target === 'all' || rule.getAttribute('data-category') === target) {
+                            rule.classList.remove('hidden');
+                        } else {
+                            rule.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('.accordion-icon');
+                    content.classList.toggle('hidden');
+                    icon.textContent = content.classList.contains('hidden') ? '+' : '−';
+                });
+            });
+
+            const quizAnswers = {
+                ex1: {
+                    'ex1-q1': 'on',
+                    'ex1-q2': 'between',
+                    'ex1-q3': 'at',
+                    'ex1-q4': 'at',
+                    'ex1-q5': 'about',
+                    'ex1-q6': 'at',
+                    'ex1-q7': 'for',
+                    'ex1-q8': 'in',
+                    'ex1-q9': 'on',
+                    'ex1-q10': 'in',
+                },
+                ex2: {
+                    'ex2-q1': 'in',
+                    'ex2-q2': 'to',
+                    'ex2-q3': 'on',
+                    'ex2-q4': 'with',
+                    'ex2-q5': 'in',
+                    'ex2-q6': 'to',
+                    'ex2-q7': 'with',
+                    'ex2-q8': 'in',
+                    'ex2-q9': 'in',
+                    'ex2-q10': 'in',
+                    'ex2-q11': 'at',
+                    'ex2-q12': 'with',
+                    'ex2-q13': 'on',
+                    'ex2-q14': 'of',
+                    'ex2-q15': 'on',
+                    'ex2-q16': 'in',
+                    'ex2-q17': 'from',
+                    'ex2-q18': 'to',
+                },
+                ex3: {
+                    'ex3-q1': 'to',
+                    'ex3-q2': 'of',
+                    'ex3-q3': 'with',
+                    'ex3-q4': 'on',
+                    'ex3-q5': 'at',
+                }
+            };
+
+            function checkAnswers(formId, answerKey) {
+                const inputs = document.querySelectorAll(`#${formId} .quiz-input`);
+                inputs.forEach(input => {
+                    const userAnswer = input.value.trim().toLowerCase();
+                    const correctAnswer = answerKey[input.id];
+                    input.classList.remove('correct', 'incorrect');
+                    if (userAnswer === correctAnswer) {
+                        input.classList.add('correct');
+                    } else {
+                        input.classList.add('incorrect');
+                    }
+                });
+            }
+
+            function showAnswers(formId, answerKey) {
+                const inputs = document.querySelectorAll(`#${formId} .quiz-input`);
+                inputs.forEach(input => {
+                    input.value = answerKey[input.id];
+                    input.classList.remove('incorrect');
+                    input.classList.add('correct');
+                });
+            }
+
+            document.getElementById('ex1-check').addEventListener('click', () => checkAnswers('ex1-form', quizAnswers.ex1));
+            document.getElementById('ex1-show').addEventListener('click', () => showAnswers('ex1-form', quizAnswers.ex1));
+
+            document.getElementById('ex2-check').addEventListener('click', () => checkAnswers('ex2-form', quizAnswers.ex2));
+            document.getElementById('ex2-show').addEventListener('click', () => showAnswers('ex2-form', quizAnswers.ex2));
+
+            document.getElementById('ex3-check').addEventListener('click', () => checkAnswers('ex3-form', quizAnswers.ex3));
+            document.getElementById('ex3-show').addEventListener('click', () => showAnswers('ex3-form', quizAnswers.ex3));
+        });
+    </script>
+</body>
+</html>
